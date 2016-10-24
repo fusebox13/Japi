@@ -1,3 +1,6 @@
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -14,10 +17,7 @@ import java.io.StringReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * Created by Dan on 10/10/2016.
@@ -30,6 +30,7 @@ public class Japi {
     private boolean isParsed = false;
 
     private Document XmlDocument = null;
+    private JSONObject JSONDocument = null;
 
     /**
      * Japi is instantiated using an Factory design pattern.  Japi.get(url) creates a new instance of Japi that stores the
@@ -142,26 +143,25 @@ public class Japi {
     private void parse() {
 
         if (documentType.equals("xml"))
-            this.parseToXML();
+            this.parseXML();
          else if (documentType.equals("json"))
-            this.parseToJSON();
+            this.parseJSON();
          else if (documentType.equals("html"))
-            this.parseToHTML();
+            this.parseHTML();
          else
             this.isParsed = false;
     }
 
-    private void parseToJSON(){
-
-
+    private void parseJSON(){
+        this.JSONDocument = new JSONObject(this.Japiresponse);
         this.isParsed = true;
     }
 
-    private void parseToHTML() {
+    private void parseHTML() {
 
         this.isParsed = true;
     }
-    private void parseToXML() {
+    private void parseXML() {
         Document document;
 
         if (this.Japiresponse.equals(null)) {
@@ -186,6 +186,8 @@ public class Japi {
         }
 
     }
+
+
 
     private void setDocumentType(){
 
@@ -224,6 +226,10 @@ public class Japi {
     public void printNodes(){
         if (this.documentType.equals("xml"))
             this.printXMLNodes(this.XmlDocument.getDocumentElement());
+        else if (this.documentType.equals("json"))
+            this.printJSONNodes(this.JSONDocument);
+        else
+            System.out.println("Unable to print");
     }
 
     private void printXMLNodes(Node node) {
@@ -238,9 +244,28 @@ public class Japi {
                 printXMLNodes(current);
             }
         }
-
     }
 
+    private void printJSONNodes(JSONObject root) {
 
+
+            Iterator<String> i = root.keys();
+
+            while (i.hasNext()) {
+                String key = i.next();
+                System.out.println(key);
+                try {
+                    if (root.get(key) instanceof JSONObject || root.get(key) instanceof JSONArray) {
+                        //System.out.println(JSONDocument.get(key) + " " + JSONDocument.get(key).getClass());
+                        printJSONNodes(JSONDocument.getJSONObject(key));
+                    }
+
+                } catch (Throwable e) {
+
+                }
+            }
+
+
+    }
 
 }
